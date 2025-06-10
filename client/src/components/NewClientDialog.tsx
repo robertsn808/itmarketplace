@@ -11,22 +11,16 @@ import { Plus } from "lucide-react";
 
 export function NewClientDialog() {
   const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [notes, setNotes] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const form = useForm<InsertClient>({
-    resolver: zodResolver(insertClientSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      notes: "",
-    },
-  });
-
   const createMutation = useMutation({
-    mutationFn: async (data: InsertClient) => {
+    mutationFn: async (data: any) => {
       return await apiRequest("POST", "/api/clients", data);
     },
     onSuccess: () => {
@@ -36,7 +30,12 @@ export function NewClientDialog() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      form.reset();
+      // Reset form
+      setName("");
+      setEmail("");
+      setPhone("");
+      setAddress("");
+      setNotes("");
       setOpen(false);
     },
     onError: (error) => {
@@ -49,8 +48,24 @@ export function NewClientDialog() {
     },
   });
 
-  const onSubmit = (data: InsertClient) => {
-    createMutation.mutate(data);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name) {
+      toast({
+        title: "Validation Error",
+        description: "Client name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    createMutation.mutate({
+      name,
+      email: email || null,
+      phone: phone || null,
+      address: address || null,
+      notes: notes || null,
+    });
   };
 
   return (
@@ -68,96 +83,64 @@ export function NewClientDialog() {
             Add a new client to your customer database.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter client's full name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Full Name *</Label>
+            <Input 
+              placeholder="Enter client's full name" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="Enter email address" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          <div className="space-y-2">
+            <Label>Email Address</Label>
+            <Input 
+              type="email" 
+              placeholder="Enter email address" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter phone number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          <div className="space-y-2">
+            <Label>Phone Number</Label>
+            <Input 
+              placeholder="Enter phone number" 
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Address</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter full address"
-                      className="min-h-[80px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          <div className="space-y-2">
+            <Label>Address</Label>
+            <Textarea 
+              placeholder="Enter full address"
+              className="min-h-[80px]"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Add any additional notes about the client"
-                      className="min-h-[80px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+          <div className="space-y-2">
+            <Label>Notes</Label>
+            <Textarea 
+              placeholder="Add any additional notes about the client"
+              className="min-h-[80px]"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
             />
+          </div>
 
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating..." : "Create Client"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+          <div className="flex justify-end space-x-2">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={createMutation.isPending}>
+              {createMutation.isPending ? "Creating..." : "Create Client"}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

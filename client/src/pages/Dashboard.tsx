@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NewServiceRequestDialog } from "@/components/NewServiceRequestDialog";
+import { NewClientDialog } from "@/components/NewClientDialog";
 import { 
   Users, 
   ClipboardList, 
@@ -192,10 +194,7 @@ export default function Dashboard() {
           <TabsContent value="requests" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-foreground">Service Requests</h2>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                New Request
-              </Button>
+              <NewServiceRequestDialog />
             </div>
             
             <Card>
@@ -248,10 +247,7 @@ export default function Dashboard() {
           <TabsContent value="clients" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-foreground">Clients</h2>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Client
-              </Button>
+              <NewClientDialog />
             </div>
             
             <Card>
