@@ -216,7 +216,7 @@ export function TicketDialog({ serviceRequest, open, onOpenChange }: TicketDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[900px] h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-[900px] h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Ticket #{ticket?.id || "New"} - {serviceRequest?.serviceType}
@@ -290,7 +290,7 @@ export function TicketDialog({ serviceRequest, open, onOpenChange }: TicketDialo
                   <CardTitle className="text-lg">Communication</CardTitle>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col p-0">
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                     {messagesLoading ? (
                       <div className="flex items-center justify-center py-8">
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -402,7 +402,7 @@ export function TicketDialog({ serviceRequest, open, onOpenChange }: TicketDialo
             </div>
 
             {/* Sidebar */}
-            <div className="w-80 space-y-4">
+            <div className="w-80 space-y-4 overflow-y-auto max-h-full">
               {/* Service Request Details */}
               <Card>
                 <CardHeader>
@@ -473,13 +473,13 @@ export function TicketDialog({ serviceRequest, open, onOpenChange }: TicketDialo
 
               {/* Price Negotiation */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
                     <DollarSign className="h-4 w-4" />
                     Price Negotiation
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-2 text-sm">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Label className="text-xs text-muted-foreground">Estimated Hours</Label>
@@ -539,15 +539,15 @@ export function TicketDialog({ serviceRequest, open, onOpenChange }: TicketDialo
                       placeholder="Add notes about pricing, parts, travel time, etc..."
                       value={priceNotes}
                       onChange={(e) => setPriceNotes(e.target.value)}
-                      className="min-h-[60px] text-sm resize-none"
+                      className="h-16 text-xs resize-none"
                     />
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" className="flex-1">
+                  <div className="flex gap-1">
+                    <Button size="sm" variant="outline" className="flex-1 h-7 text-xs">
                       Send Quote
                     </Button>
-                    <Button size="sm" className="flex-1">
+                    <Button size="sm" className="flex-1 h-7 text-xs">
                       Accept Quote
                     </Button>
                   </div>
