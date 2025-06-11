@@ -9,6 +9,7 @@ import {
   integer,
   decimal,
   date,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -86,6 +87,20 @@ export const webLeads = pgTable("web_leads", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Incidents table for tracking repair progress
+export const incidents = pgTable("incidents", {
+  id: serial("id").primaryKey(),
+  clientId: integer("client_id").references(() => clients.id),
+  title: varchar("title", { length: 200 }),
+  description: text("description"),
+  callStage: boolean("call_stage").default(false),
+  receiveStage: boolean("receive_stage").default(false),
+  repairStage: boolean("repair_stage").default(false),
+  pickupStage: boolean("pickup_stage").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Zod schemas
 export const insertClientSchema = createInsertSchema(clients).omit({
   id: true,
@@ -110,6 +125,12 @@ export const insertWebLeadSchema = createInsertSchema(webLeads).omit({
   createdAt: true,
 });
 
+export const insertIncidentSchema = createInsertSchema(incidents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -123,3 +144,5 @@ export type Invoice = typeof invoices.$inferSelect;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
 export type WebLead = typeof webLeads.$inferSelect;
 export type InsertWebLead = z.infer<typeof insertWebLeadSchema>;
+export type Incident = typeof incidents.$inferSelect;
+export type InsertIncident = z.infer<typeof insertIncidentSchema>;

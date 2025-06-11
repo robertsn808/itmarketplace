@@ -5,6 +5,7 @@ import {
   inventory,
   invoices,
   webLeads,
+  incidents,
   type User,
   type UpsertUser,
   type Client,
@@ -17,6 +18,8 @@ import {
   type InsertInvoice,
   type WebLead,
   type InsertWebLead,
+  type Incident,
+  type InsertIncident,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -58,6 +61,14 @@ export interface IStorage {
   getAllWebLeads(): Promise<WebLead[]>;
   createWebLead(lead: InsertWebLead): Promise<WebLead>;
   deleteWebLead(id: number): Promise<void>;
+  
+  // Incident operations
+  getAllIncidents(): Promise<Incident[]>;
+  getIncidentsByClient(clientId: number): Promise<Incident[]>;
+  getIncident(id: number): Promise<Incident | undefined>;
+  createIncident(incident: InsertIncident): Promise<Incident>;
+  updateIncident(id: number, incident: Partial<InsertIncident>): Promise<Incident>;
+  deleteIncident(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -206,6 +217,38 @@ export class DatabaseStorage implements IStorage {
 
   async deleteWebLead(id: number): Promise<void> {
     await db.delete(webLeads).where(eq(webLeads.id, id));
+  }
+
+  // Incident operations
+  async getAllIncidents(): Promise<Incident[]> {
+    return await db.select().from(incidents).orderBy(desc(incidents.createdAt));
+  }
+
+  async getIncidentsByClient(clientId: number): Promise<Incident[]> {
+    return await db.select().from(incidents).where(eq(incidents.clientId, clientId)).orderBy(desc(incidents.createdAt));
+  }
+
+  async getIncident(id: number): Promise<Incident | undefined> {
+    const [incident] = await db.select().from(incidents).where(eq(incidents.id, id));
+    return incident;
+  }
+
+  async createIncident(incidentData: InsertIncident): Promise<Incident> {
+    const [incident] = await db.insert(incidents).values(incidentData).returning();
+    return incident;
+  }
+
+  async updateIncident(id: number, incidentData: Partial<InsertIncident>): Promise<Incident> {
+    const [incident] = await db
+      .update(incidents)
+      .set({ ...incidentData, updatedAt: new Date() })
+      .where(eq(incidents.id, id))
+      .returning();
+    return incident;
+  }
+
+  async deleteIncident(id: number): Promise<void> {
+    await db.delete(incidents).where(eq(incidents.id, id));
   }
 }
 
