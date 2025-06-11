@@ -349,6 +349,147 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Client Authentication Routes
+  app.post("/api/client/signup", async (req, res) => {
+    try {
+      const { name, email, phone, password } = req.body;
+      
+      const existingClient = await storage.getClientByEmail(email);
+      if (existingClient) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+
+      const client = await storage.createClientAccount({
+        name,
+        email,
+        phone,
+        password, // In production, hash with bcrypt
+        isActive: true,
+      });
+
+      res.json({ message: "Account created successfully", clientId: client.id });
+    } catch (error) {
+      console.error("Client signup error:", error);
+      res.status(500).json({ message: "Failed to create account" });
+    }
+  });
+
+  app.post("/api/client/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      const client = await storage.getClientByEmail(email);
+      if (!client || client.password !== password) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      req.session.clientId = client.id;
+      req.session.clientEmail = client.email;
+      
+      res.json({ message: "Login successful", client: { id: client.id, name: client.name, email: client.email } });
+    } catch (error) {
+      console.error("Client login error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  app.post("/api/client/logout", async (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.json({ message: "Logout successful" });
+    });
+  });
+
+  app.get("/api/client/profile", async (req, res) => {
+    try {
+      const clientId = req.session.clientId;
+      if (!clientId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const client = await storage.getClient(clientId);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+
+      const { password, ...clientData } = client;
+      res.json(clientData);
+    } catch (error) {
+      console.error("Get client profile error:", error);
+      res.status(500).json({ message: "Failed to get profile" });
+    }
+  });
+
+  app.get("/api/client/service-requests", async (req, res) => {
+    try {
+      const clientId = req.session.clientId;
+      if (!clientId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const requests = await storage.getClientServiceRequests(clientId);
+      res.json(requests);
+    } catch (error) {
+      console.error("Get client requests error:", error);
+      res.status(500).json({ message: "Failed to get service requests" });
+    }
+  });
+
+  app.post("/api/client/service-requests", async (req, res) => {
+    try {
+      const clientId = req.session.clientId;
+      if (!clientId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { serviceType, description } = req.body;
+      const request = await storage.createClientServiceRequest({
+        clientId,
+        serviceType,
+        description,
+        status: "pending",
+      });
+
+      res.json(request);
+    } catch (error) {
+      console.error("Create client request error:", error);
+      res.status(500).json({ message: "Failed to create service request" });
+    }
+  });
+
+  app.get("/api/client/available-techs", async (req, res) => {
+    try {
+      const clientId = req.session.clientId;
+      if (!clientId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const techs = await storage.getAvailableTechs(clientId);
+      res.json(techs);
+    } catch (error) {
+      console.error("Get available techs error:", error);
+      res.status(500).json({ message: "Failed to get available techs" });
+    }
+  });
+
+  app.get("/api/client/tickets/:ticketId/messages", async (req, res) => {
+    try {
+      const clientId = req.session.clientId;
+      if (!clientId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const ticketId = parseInt(req.params.ticketId);
+      const messages = await storage.getTicketMessages(ticketId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Get client ticket messages error:", error);
+      res.status(500).json({ message: "Failed to get messages" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

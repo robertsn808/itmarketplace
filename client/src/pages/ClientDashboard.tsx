@@ -167,8 +167,9 @@ export default function ClientDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="repairs" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="repairs">My Repairs</TabsTrigger>
+            <TabsTrigger value="techs">Find Techs</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
@@ -246,6 +247,10 @@ export default function ClientDashboard() {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="techs" className="space-y-6">
+            <TechMap />
           </TabsContent>
 
           <TabsContent value="profile" className="space-y-6">

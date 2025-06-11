@@ -338,6 +338,53 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return profile;
   }
+
+  // Client authentication operations
+  async getClientByEmail(email: string): Promise<Client | undefined> {
+    const [client] = await db.select().from(clients).where(eq(clients.email, email));
+    return client;
+  }
+
+  async createClientAccount(clientData: any): Promise<Client> {
+    const [client] = await db
+      .insert(clients)
+      .values(clientData)
+      .returning();
+    return client;
+  }
+
+  // Available techs for clients
+  async getAvailableTechs(clientId?: number): Promise<TechProfile[]> {
+    const query = db
+      .select()
+      .from(techProfiles)
+      .where(eq(techProfiles.isAvailable, true));
+    
+    const allTechs = await query;
+    
+    // Filter based on availability mode
+    return allTechs.filter(tech => {
+      if (tech.availabilityMode === 'all') return true;
+      if (tech.availabilityMode === 'specific' && clientId) {
+        const allowedIds = tech.allowedClientIds as number[] || [];
+        return allowedIds.includes(clientId);
+      }
+      return false;
+    });
+  }
+
+  // Client service requests
+  async getClientServiceRequests(clientId: number): Promise<ServiceRequest[]> {
+    return await db.select().from(serviceRequests).where(eq(serviceRequests.clientId, clientId));
+  }
+
+  async createClientServiceRequest(requestData: any): Promise<ServiceRequest> {
+    const [request] = await db
+      .insert(serviceRequests)
+      .values(requestData)
+      .returning();
+    return request;
+  }
 }
 
 export const storage = new DatabaseStorage();
