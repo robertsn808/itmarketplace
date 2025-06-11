@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewServiceRequestDialog } from "@/components/NewServiceRequestDialog";
-import { NewClientDialog } from "@/components/NewClientDialog";
+import { SimpleClientDialog } from "@/components/SimpleClientDialog";
 import { 
   Users, 
   ClipboardList, 
@@ -247,7 +247,7 @@ export default function Dashboard() {
           <TabsContent value="clients" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-foreground">Clients</h2>
-              <NewClientDialog />
+              <SimpleClientDialog />
             </div>
             
             <Card>
