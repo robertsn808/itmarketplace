@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NewServiceRequestDialog } from "@/components/NewServiceRequestDialog";
 import { SimpleClientDialog } from "@/components/SimpleClientDialog";
+import { TicketDialog } from "@/components/TicketDialog";
+import { TechProfileDialog } from "@/components/TechProfileDialog";
 import { 
   Users, 
   ClipboardList, 
@@ -30,6 +32,8 @@ export default function Dashboard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
+  const [selectedServiceRequest, setSelectedServiceRequest] = useState<any>(null);
+  const [ticketDialogOpen, setTicketDialogOpen] = useState(false);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -214,6 +218,12 @@ export default function Dashboard() {
     updateIncidentMutation.mutate({ id: incident.id, updates });
   };
 
+  // Handle service request click to open ticket
+  const handleServiceRequestClick = (serviceRequest: any) => {
+    setSelectedServiceRequest(serviceRequest);
+    setTicketDialogOpen(true);
+  };
+
   // Render stage indicator
   const renderStageIndicator = (
     icon: React.ReactNode,
@@ -358,7 +368,11 @@ export default function Dashboard() {
                       </TableRow>
                     ) : (
                       serviceRequests?.map((request: any) => (
-                        <TableRow key={request.id}>
+                        <TableRow 
+                          key={request.id}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() => handleServiceRequestClick(request)}
+                        >
                           <TableCell className="font-medium">#{request.id}</TableCell>
                           <TableCell>{request.clientId || "N/A"}</TableCell>
                           <TableCell>{request.serviceType || "N/A"}</TableCell>
@@ -631,6 +645,13 @@ export default function Dashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Ticket Dialog */}
+      <TicketDialog
+        serviceRequest={selectedServiceRequest}
+        open={ticketDialogOpen}
+        onOpenChange={setTicketDialogOpen}
+      />
     </div>
   );
 }
