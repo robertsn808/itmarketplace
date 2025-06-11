@@ -14,8 +14,11 @@ import {
   Mail, 
   Clock,
   Star,
-  Users
+  Users,
+  LogIn,
+  UserPlus
 } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Landing() {
   const services = [
@@ -113,6 +116,30 @@ export default function Landing() {
                 <Button size="lg" variant="outline" className="text-lg" asChild>
                   <a href="#services">View Services</a>
                 </Button>
+              </div>
+              
+              {/* Client Portal Access */}
+              <div className="mt-8 p-6 bg-white/50 dark:bg-gray-800/50 rounded-lg border">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  Existing Customers
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Track your repairs, communicate with technicians, and manage your service requests.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button variant="outline" className="flex-1" asChild>
+                    <Link href="/client/login">
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Sign In
+                    </Link>
+                  </Button>
+                  <Button variant="default" className="flex-1" asChild>
+                    <Link href="/client/signup">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Create Account
+                    </Link>
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="relative">
