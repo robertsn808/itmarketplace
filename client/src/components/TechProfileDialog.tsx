@@ -155,6 +155,47 @@ export function TechProfileDialog() {
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  placeholder="(555) 123-4567"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="specialties">Specialties</Label>
+                <Input
+                  id="specialties"
+                  placeholder="iPhone Repair, Laptop Diagnostics, Network Setup"
+                  value={specialties}
+                  onChange={(e) => setSpecialties(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Separate multiple specialties with commas
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  placeholder="Brief description of your experience and expertise..."
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  className="min-h-[80px]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hourlyRate">Hourly Rate ($)</Label>
+                <Input
+                  id="hourlyRate"
+                  type="number"
+                  placeholder="75"
+                  value={hourlyRate}
+                  onChange={(e) => setHourlyRate(e.target.value)}
+                />
+              </div>
             </CardContent>
           </Card>
 
@@ -194,6 +235,81 @@ export function TechProfileDialog() {
                   This signature will be automatically added to emails sent to clients.
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Location & Availability */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Location & Availability
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>Available for Clients</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Allow clients to find and contact you
+                  </p>
+                </div>
+                <Switch checked={isAvailable} onCheckedChange={setIsAvailable} />
+              </div>
+
+              {isAvailable && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="availabilityMode">Visibility Mode</Label>
+                    <Select value={availabilityMode} onValueChange={setAvailabilityMode}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select visibility" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Not visible to clients</SelectItem>
+                        <SelectItem value="all">Visible to all clients</SelectItem>
+                        <SelectItem value="specific">Visible to specific clients only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address">Service Address</Label>
+                    <Input
+                      id="address"
+                      placeholder="123 Main St, City, State 12345"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="latitude">Latitude</Label>
+                      <Input
+                        id="latitude"
+                        placeholder="21.3099"
+                        value={latitude}
+                        onChange={(e) => setLatitude(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="longitude">Longitude</Label>
+                      <Input
+                        id="longitude"
+                        placeholder="-157.8581"
+                        value={longitude}
+                        onChange={(e) => setLongitude(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <Button variant="outline" onClick={getCurrentLocation} className="w-full">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Use Current Location
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
 
