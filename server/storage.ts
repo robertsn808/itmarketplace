@@ -418,6 +418,128 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return request;
   }
+
+  // Tech certification operations
+  async getTechCertifications(techProfileId: number): Promise<TechCertification[]> {
+    return await db.select().from(techCertifications)
+      .where(eq(techCertifications.techProfileId, techProfileId))
+      .orderBy(desc(techCertifications.issueDate));
+  }
+
+  async createTechCertification(certificationData: InsertTechCertification): Promise<TechCertification> {
+    const [certification] = await db
+      .insert(techCertifications)
+      .values(certificationData)
+      .returning();
+    return certification;
+  }
+
+  async updateTechCertification(id: number, certificationData: Partial<InsertTechCertification>): Promise<TechCertification> {
+    const [certification] = await db
+      .update(techCertifications)
+      .set(certificationData)
+      .where(eq(techCertifications.id, id))
+      .returning();
+    return certification;
+  }
+
+  async deleteTechCertification(id: number): Promise<void> {
+    await db.delete(techCertifications).where(eq(techCertifications.id, id));
+  }
+
+  // Tech skill operations
+  async getTechSkills(techProfileId: number): Promise<TechSkill[]> {
+    return await db.select().from(techSkills)
+      .where(eq(techSkills.techProfileId, techProfileId))
+      .orderBy(techSkills.category, techSkills.name);
+  }
+
+  async createTechSkill(skillData: InsertTechSkill): Promise<TechSkill> {
+    const [skill] = await db
+      .insert(techSkills)
+      .values(skillData)
+      .returning();
+    return skill;
+  }
+
+  async updateTechSkill(id: number, skillData: Partial<InsertTechSkill>): Promise<TechSkill> {
+    const [skill] = await db
+      .update(techSkills)
+      .set(skillData)
+      .where(eq(techSkills.id, id))
+      .returning();
+    return skill;
+  }
+
+  async deleteTechSkill(id: number): Promise<void> {
+    await db.delete(techSkills).where(eq(techSkills.id, id));
+  }
+
+  // Service completion operations
+  async getServiceCompletions(techProfileId: number): Promise<ServiceCompletion[]> {
+    return await db.select().from(serviceCompletions)
+      .where(eq(serviceCompletions.techProfileId, techProfileId))
+      .orderBy(desc(serviceCompletions.completedAt));
+  }
+
+  async createServiceCompletion(completionData: InsertServiceCompletion): Promise<ServiceCompletion> {
+    const [completion] = await db
+      .insert(serviceCompletions)
+      .values(completionData)
+      .returning();
+    return completion;
+  }
+
+  async updateServiceCompletion(id: number, completionData: Partial<InsertServiceCompletion>): Promise<ServiceCompletion> {
+    const [completion] = await db
+      .update(serviceCompletions)
+      .set(completionData)
+      .where(eq(serviceCompletions.id, id))
+      .returning();
+    return completion;
+  }
+
+  async deleteServiceCompletion(id: number): Promise<void> {
+    await db.delete(serviceCompletions).where(eq(serviceCompletions.id, id));
+  }
+
+  async getTechStats(techProfileId: number): Promise<{
+    totalCompletions: number;
+    totalHours: number;
+    averageRating: number;
+    categories: { category: string; count: number }[];
+  }> {
+    const completions = await this.getServiceCompletions(techProfileId);
+    
+    const totalCompletions = completions.length;
+    const totalHours = completions.reduce((sum, completion) => 
+      sum + (parseFloat(completion.hoursWorked?.toString() || '0')), 0);
+    
+    const ratingsSum = completions
+      .filter(c => c.clientSatisfactionRating)
+      .reduce((sum, completion) => sum + (completion.clientSatisfactionRating || 0), 0);
+    const ratingsCount = completions.filter(c => c.clientSatisfactionRating).length;
+    const averageRating = ratingsCount > 0 ? ratingsSum / ratingsCount : 0;
+
+    const categoryMap = new Map<string, number>();
+    completions.forEach(completion => {
+      if (completion.category) {
+        categoryMap.set(completion.category, (categoryMap.get(completion.category) || 0) + 1);
+      }
+    });
+
+    const categories = Array.from(categoryMap.entries()).map(([category, count]) => ({
+      category,
+      count
+    }));
+
+    return {
+      totalCompletions,
+      totalHours,
+      averageRating,
+      categories
+    };
+  }
 }
 
 export const storage = new DatabaseStorage();
