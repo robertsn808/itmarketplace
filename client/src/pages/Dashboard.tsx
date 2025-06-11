@@ -220,7 +220,7 @@ export default function Dashboard() {
     isActive: boolean,
     isClickable: boolean,
     label: string,
-    onClick?: () => void
+    onClick: (() => void) | undefined = undefined
   ) => (
     <div 
       className={`flex flex-col items-center p-2 rounded cursor-pointer transition-colors ${
@@ -399,21 +399,82 @@ export default function Dashboard() {
                   <TableBody>
                     {clients?.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                           No clients found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      clients?.map((client: any) => (
-                        <TableRow key={client.id}>
-                          <TableCell className="font-medium">{client.name || "N/A"}</TableCell>
-                          <TableCell>{client.email || "N/A"}</TableCell>
-                          <TableCell>{client.phone || "N/A"}</TableCell>
-                          <TableCell>
-                            {client.createdAt ? new Date(client.createdAt).toLocaleDateString() : "N/A"}
-                          </TableCell>
-                        </TableRow>
-                      ))
+                      clients?.map((client: any) => {
+                        const incident = getClientIncident(client.id);
+                        return (
+                          <TableRow key={client.id}>
+                            <TableCell className="font-medium">{client.name || "N/A"}</TableCell>
+                            <TableCell>{client.email || "N/A"}</TableCell>
+                            <TableCell>{client.phone || "N/A"}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                {incident ? (
+                                  <>
+                                    {renderStageIndicator(
+                                      <Phone className="h-4 w-4" />,
+                                      incident.callStage,
+                                      true,
+                                      "Call",
+                                      () => handleToggleStage(incident, "callStage")
+                                    )}
+                                    {renderStageIndicator(
+                                      <Package className="h-4 w-4" />,
+                                      incident.receiveStage,
+                                      incident.callStage,
+                                      "Receive",
+                                      incident.callStage ? () => handleToggleStage(incident, "receiveStage") : undefined
+                                    )}
+                                    {renderStageIndicator(
+                                      <Wrench className="h-4 w-4" />,
+                                      incident.repairStage,
+                                      incident.receiveStage,
+                                      "Repair",
+                                      incident.receiveStage ? () => handleToggleStage(incident, "repairStage") : undefined
+                                    )}
+                                    {renderStageIndicator(
+                                      <CheckCircle className="h-4 w-4" />,
+                                      incident.pickupStage,
+                                      incident.repairStage,
+                                      "Pickup",
+                                      incident.repairStage ? () => handleToggleStage(incident, "pickupStage") : undefined
+                                    )}
+                                  </>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">No active repair</span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {incident ? (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  View Details
+                                </Button>
+                              ) : (
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => handleCreateIncident(client)}
+                                  disabled={createIncidentMutation.isPending}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
+                                >
+                                  Start Repair
+                                </Button>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {client.createdAt ? new Date(client.createdAt).toLocaleDateString() : "N/A"}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
                     )}
                   </TableBody>
                 </Table>
