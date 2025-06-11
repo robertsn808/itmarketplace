@@ -135,7 +135,7 @@ export const ticketMessages = pgTable("ticket_messages", {
 // Tech profiles for personal email integration
 export const techProfiles = pgTable("tech_profiles", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id", { length: 255 }).references(() => users.id),
+  userId: varchar("user_id", { length: 255 }).references(() => users.id).unique(),
   name: varchar("name", { length: 100 }),
   personalEmail: varchar("personal_email", { length: 100 }),
   emailSignature: text("email_signature"),
