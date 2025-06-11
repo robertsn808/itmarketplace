@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertWebLeadSchema, insertClientSchema, insertServiceRequestSchema, insertInventorySchema, insertInvoiceSchema, insertIncidentSchema } from "@shared/schema";
+import { insertWebLeadSchema, insertClientSchema, insertServiceRequestSchema, insertInventorySchema, insertInvoiceSchema, insertIncidentSchema, insertTicketSchema, insertTicketMessageSchema, insertTechProfileSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -236,6 +236,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating incident:", error);
       res.status(500).json({ message: "Failed to update incident" });
+    }
+  });
+
+  // Ticket routes
+  app.get('/api/tickets', isAuthenticated, async (req, res) => {
+    try {
+      const tickets = await storage.getAllTickets();
+      res.json(tickets);
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+      res.status(500).json({ message: "Failed to fetch tickets" });
+    }
+  });
+
+  app.get('/api/tickets/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const ticket = await storage.getTicket(id);
+      res.json(ticket);
+    } catch (error) {
+      console.error("Error fetching ticket:", error);
+      res.status(500).json({ message: "Failed to fetch ticket" });
+    }
+  });
+
+  app.get('/api/service-requests/:id/tickets', isAuthenticated, async (req, res) => {
+    try {
+      const serviceRequestId = parseInt(req.params.id);
+      const tickets = await storage.getTicketsByServiceRequest(serviceRequestId);
+      res.json(tickets);
+    } catch (error) {
+      console.error("Error fetching service request tickets:", error);
+      res.status(500).json({ message: "Failed to fetch tickets" });
+    }
+  });
+
+  app.post('/api/tickets', isAuthenticated, async (req, res) => {
+    try {
+      const ticketData = insertTicketSchema.parse(req.body);
+      const ticket = await storage.createTicket(ticketData);
+      res.json(ticket);
+    } catch (error) {
+      console.error("Error creating ticket:", error);
+      res.status(500).json({ message: "Failed to create ticket" });
+    }
+  });
+
+  app.patch('/api/tickets/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const ticket = await storage.updateTicket(id, updates);
+      res.json(ticket);
+    } catch (error) {
+      console.error("Error updating ticket:", error);
+      res.status(500).json({ message: "Failed to update ticket" });
+    }
+  });
+
+  // Ticket message routes
+  app.get('/api/tickets/:id/messages', isAuthenticated, async (req, res) => {
+    try {
+      const ticketId = parseInt(req.params.id);
+      const messages = await storage.getTicketMessages(ticketId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching ticket messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  app.post('/api/tickets/:id/messages', isAuthenticated, async (req, res) => {
+    try {
+      const ticketId = parseInt(req.params.id);
+      const messageData = insertTicketMessageSchema.parse({
+        ...req.body,
+        ticketId
+      });
+      const message = await storage.createTicketMessage(messageData);
+      res.json(message);
+    } catch (error) {
+      console.error("Error creating ticket message:", error);
+      res.status(500).json({ message: "Failed to create message" });
+    }
+  });
+
+  // Tech profile routes
+  app.get('/api/tech-profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profile = await storage.getTechProfile(userId);
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching tech profile:", error);
+      res.status(500).json({ message: "Failed to fetch tech profile" });
+    }
+  });
+
+  app.post('/api/tech-profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profileData = insertTechProfileSchema.parse({
+        ...req.body,
+        userId
+      });
+      const profile = await storage.upsertTechProfile(profileData);
+      res.json(profile);
+    } catch (error) {
+      console.error("Error updating tech profile:", error);
+      res.status(500).json({ message: "Failed to update tech profile" });
     }
   });
 

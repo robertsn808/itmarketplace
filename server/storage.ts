@@ -6,6 +6,9 @@ import {
   invoices,
   webLeads,
   incidents,
+  tickets,
+  ticketMessages,
+  techProfiles,
   type User,
   type UpsertUser,
   type Client,
@@ -20,6 +23,12 @@ import {
   type InsertWebLead,
   type Incident,
   type InsertIncident,
+  type Ticket,
+  type InsertTicket,
+  type TicketMessage,
+  type InsertTicketMessage,
+  type TechProfile,
+  type InsertTechProfile,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -69,6 +78,22 @@ export interface IStorage {
   createIncident(incident: InsertIncident): Promise<Incident>;
   updateIncident(id: number, incident: Partial<InsertIncident>): Promise<Incident>;
   deleteIncident(id: number): Promise<void>;
+  
+  // Ticket operations
+  getAllTickets(): Promise<Ticket[]>;
+  getTicket(id: number): Promise<Ticket | undefined>;
+  getTicketsByServiceRequest(serviceRequestId: number): Promise<Ticket[]>;
+  createTicket(ticket: InsertTicket): Promise<Ticket>;
+  updateTicket(id: number, ticket: Partial<InsertTicket>): Promise<Ticket>;
+  deleteTicket(id: number): Promise<void>;
+  
+  // Ticket message operations
+  getTicketMessages(ticketId: number): Promise<TicketMessage[]>;
+  createTicketMessage(message: InsertTicketMessage): Promise<TicketMessage>;
+  
+  // Tech profile operations
+  getTechProfile(userId: string): Promise<TechProfile | undefined>;
+  upsertTechProfile(profile: InsertTechProfile): Promise<TechProfile>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -249,6 +274,69 @@ export class DatabaseStorage implements IStorage {
 
   async deleteIncident(id: number): Promise<void> {
     await db.delete(incidents).where(eq(incidents.id, id));
+  }
+
+  // Ticket operations
+  async getAllTickets(): Promise<Ticket[]> {
+    return await db.select().from(tickets).orderBy(desc(tickets.createdAt));
+  }
+
+  async getTicket(id: number): Promise<Ticket | undefined> {
+    const [ticket] = await db.select().from(tickets).where(eq(tickets.id, id));
+    return ticket;
+  }
+
+  async getTicketsByServiceRequest(serviceRequestId: number): Promise<Ticket[]> {
+    return await db.select().from(tickets).where(eq(tickets.serviceRequestId, serviceRequestId));
+  }
+
+  async createTicket(ticketData: InsertTicket): Promise<Ticket> {
+    const [ticket] = await db.insert(tickets).values(ticketData).returning();
+    return ticket;
+  }
+
+  async updateTicket(id: number, ticketData: Partial<InsertTicket>): Promise<Ticket> {
+    const [ticket] = await db
+      .update(tickets)
+      .set({ ...ticketData, updatedAt: new Date() })
+      .where(eq(tickets.id, id))
+      .returning();
+    return ticket;
+  }
+
+  async deleteTicket(id: number): Promise<void> {
+    await db.delete(tickets).where(eq(tickets.id, id));
+  }
+
+  // Ticket message operations
+  async getTicketMessages(ticketId: number): Promise<TicketMessage[]> {
+    return await db.select().from(ticketMessages).where(eq(ticketMessages.ticketId, ticketId)).orderBy(desc(ticketMessages.createdAt));
+  }
+
+  async createTicketMessage(messageData: InsertTicketMessage): Promise<TicketMessage> {
+    const [message] = await db.insert(ticketMessages).values(messageData).returning();
+    return message;
+  }
+
+  // Tech profile operations
+  async getTechProfile(userId: string): Promise<TechProfile | undefined> {
+    const [profile] = await db.select().from(techProfiles).where(eq(techProfiles.userId, userId));
+    return profile;
+  }
+
+  async upsertTechProfile(profileData: InsertTechProfile): Promise<TechProfile> {
+    const [profile] = await db
+      .insert(techProfiles)
+      .values(profileData)
+      .onConflictDoUpdate({
+        target: techProfiles.userId,
+        set: {
+          ...profileData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return profile;
   }
 }
 
