@@ -142,6 +142,18 @@ export const techProfiles = pgTable("tech_profiles", {
   personalEmail: varchar("personal_email", { length: 100 }),
   emailSignature: text("email_signature"),
   notificationPreferences: jsonb("notification_preferences"),
+  // Availability and location settings
+  isAvailable: boolean("is_available").default(false),
+  availabilityMode: varchar("availability_mode", { length: 20 }).default("none"), // "all", "specific", "none"
+  allowedClientIds: jsonb("allowed_client_ids"), // Array of client IDs for "specific" mode
+  specialties: text("specialties"), // Types of tech work they do
+  latitude: decimal("latitude", { precision: 10, scale: 8 }),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }),
+  address: text("address"),
+  phone: varchar("phone", { length: 20 }),
+  profileImageUrl: varchar("profile_image_url", { length: 255 }),
+  bio: text("bio"),
+  hourlyRate: decimal("hourly_rate", { precision: 8, scale: 2 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

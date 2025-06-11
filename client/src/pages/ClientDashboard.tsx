@@ -22,8 +22,10 @@ import {
   Package,
   Settings,
   Send,
-  User
+  User,
+  MapPin
 } from "lucide-react";
+import { TechMap } from "@/components/TechMap";
 
 export default function ClientDashboard() {
   const [, setLocation] = useLocation();

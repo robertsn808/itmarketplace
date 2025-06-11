@@ -8,14 +8,24 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Mail, User, Save } from "lucide-react";
+import { Settings, Mail, User, Save, MapPin, Eye, Users, DollarSign } from "lucide-react";
 
 export function TechProfileDialog() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [personalEmail, setPersonalEmail] = useState("");
   const [emailSignature, setEmailSignature] = useState("");
+  const [specialties, setSpecialties] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+  const [bio, setBio] = useState("");
+  const [hourlyRate, setHourlyRate] = useState("");
+  const [isAvailable, setIsAvailable] = useState(false);
+  const [availabilityMode, setAvailabilityMode] = useState("none");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -32,6 +42,15 @@ export function TechProfileDialog() {
       setName(techProfile.name || "");
       setPersonalEmail(techProfile.personalEmail || "");
       setEmailSignature(techProfile.emailSignature || "");
+      setSpecialties(techProfile.specialties || "");
+      setLatitude(techProfile.latitude || "");
+      setLongitude(techProfile.longitude || "");
+      setAddress(techProfile.address || "");
+      setPhone(techProfile.phone || "");
+      setBio(techProfile.bio || "");
+      setHourlyRate(techProfile.hourlyRate || "");
+      setIsAvailable(techProfile.isAvailable || false);
+      setAvailabilityMode(techProfile.availabilityMode || "none");
     }
   });
 
@@ -63,11 +82,42 @@ export function TechProfileDialog() {
       name,
       personalEmail,
       emailSignature,
+      specialties,
+      latitude: latitude ? parseFloat(latitude) : null,
+      longitude: longitude ? parseFloat(longitude) : null,
+      address,
+      phone,
+      bio,
+      hourlyRate: hourlyRate ? parseFloat(hourlyRate) : null,
+      isAvailable,
+      availabilityMode,
       notificationPreferences: {
         emailNotifications: true,
         clientNotifications: true,
       },
     });
+  };
+
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLatitude(position.coords.latitude.toString());
+          setLongitude(position.coords.longitude.toString());
+          toast({
+            title: "Location Updated",
+            description: "Your current location has been set.",
+          });
+        },
+        (error) => {
+          toast({
+            title: "Location Error",
+            description: "Unable to get your location. Please enter manually.",
+            variant: "destructive",
+          });
+        }
+      );
+    }
   };
 
   return (
