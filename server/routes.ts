@@ -490,6 +490,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Tech Certification routes
+  app.get("/api/tech-certifications/:techProfileId", isAuthenticated, async (req, res) => {
+    try {
+      const techProfileId = parseInt(req.params.techProfileId);
+      const certifications = await storage.getTechCertifications(techProfileId);
+      res.json(certifications);
+    } catch (error) {
+      console.error("Error fetching certifications:", error);
+      res.status(500).json({ message: "Failed to fetch certifications" });
+    }
+  });
+
+  app.post("/api/tech-certifications", isAuthenticated, async (req, res) => {
+    try {
+      const certification = await storage.createTechCertification(req.body);
+      res.json(certification);
+    } catch (error) {
+      console.error("Error creating certification:", error);
+      res.status(500).json({ message: "Failed to create certification" });
+    }
+  });
+
+  app.patch("/api/tech-certifications/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const certification = await storage.updateTechCertification(id, req.body);
+      res.json(certification);
+    } catch (error) {
+      console.error("Error updating certification:", error);
+      res.status(500).json({ message: "Failed to update certification" });
+    }
+  });
+
+  app.delete("/api/tech-certifications/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteTechCertification(id);
+      res.json({ message: "Certification deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting certification:", error);
+      res.status(500).json({ message: "Failed to delete certification" });
+    }
+  });
+
+  // Tech Skills routes
+  app.get("/api/tech-skills/:techProfileId", isAuthenticated, async (req, res) => {
+    try {
+      const techProfileId = parseInt(req.params.techProfileId);
+      const skills = await storage.getTechSkills(techProfileId);
+      res.json(skills);
+    } catch (error) {
+      console.error("Error fetching skills:", error);
+      res.status(500).json({ message: "Failed to fetch skills" });
+    }
+  });
+
+  app.post("/api/tech-skills", isAuthenticated, async (req, res) => {
+    try {
+      const skill = await storage.createTechSkill(req.body);
+      res.json(skill);
+    } catch (error) {
+      console.error("Error creating skill:", error);
+      res.status(500).json({ message: "Failed to create skill" });
+    }
+  });
+
+  app.patch("/api/tech-skills/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const skill = await storage.updateTechSkill(id, req.body);
+      res.json(skill);
+    } catch (error) {
+      console.error("Error updating skill:", error);
+      res.status(500).json({ message: "Failed to update skill" });
+    }
+  });
+
+  app.delete("/api/tech-skills/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteTechSkill(id);
+      res.json({ message: "Skill deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting skill:", error);
+      res.status(500).json({ message: "Failed to delete skill" });
+    }
+  });
+
+  // Service Completion routes
+  app.get("/api/service-completions/:techProfileId", isAuthenticated, async (req, res) => {
+    try {
+      const techProfileId = parseInt(req.params.techProfileId);
+      const completions = await storage.getServiceCompletions(techProfileId);
+      res.json(completions);
+    } catch (error) {
+      console.error("Error fetching completions:", error);
+      res.status(500).json({ message: "Failed to fetch completions" });
+    }
+  });
+
+  app.post("/api/service-completions", isAuthenticated, async (req, res) => {
+    try {
+      const completion = await storage.createServiceCompletion(req.body);
+      res.json(completion);
+    } catch (error) {
+      console.error("Error creating completion:", error);
+      res.status(500).json({ message: "Failed to create completion" });
+    }
+  });
+
+  app.patch("/api/service-completions/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const completion = await storage.updateServiceCompletion(id, req.body);
+      res.json(completion);
+    } catch (error) {
+      console.error("Error updating completion:", error);
+      res.status(500).json({ message: "Failed to update completion" });
+    }
+  });
+
+  app.delete("/api/service-completions/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteServiceCompletion(id);
+      res.json({ message: "Completion deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting completion:", error);
+      res.status(500).json({ message: "Failed to delete completion" });
+    }
+  });
+
+  // Tech Stats route
+  app.get("/api/tech-stats/:techProfileId", isAuthenticated, async (req, res) => {
+    try {
+      const techProfileId = parseInt(req.params.techProfileId);
+      const stats = await storage.getTechStats(techProfileId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching tech stats:", error);
+      res.status(500).json({ message: "Failed to fetch tech stats" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

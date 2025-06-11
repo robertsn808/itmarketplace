@@ -10,7 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Mail, User, Save, MapPin, Eye, Users, DollarSign } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TechCredentials } from "./TechCredentials";
+import { Settings, Mail, User, Save, MapPin, Eye, Users, DollarSign, Award, Briefcase } from "lucide-react";
 
 export function TechProfileDialog() {
   const [open, setOpen] = useState(false);
@@ -128,18 +130,25 @@ export function TechProfileDialog() {
           Tech Profile
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
             Tech Profile Settings
           </DialogTitle>
           <DialogDescription>
-            Configure your personal information and email settings for client communications.
+            Configure your profile, credentials, and service history.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="credentials">Credentials</TabsTrigger>
+            <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile" className="space-y-6">
           {/* Personal Information */}
           <Card>
             <CardHeader>
@@ -359,7 +368,74 @@ export function TechProfileDialog() {
               )}
             </Button>
           </div>
-        </div>
+          </TabsContent>
+
+          {/* Credentials Tab */}
+          <TabsContent value="credentials">
+            {techProfile?.id && (
+              <TechCredentials techProfileId={techProfile.id} />
+            )}
+          </TabsContent>
+
+          {/* Portfolio Tab */}
+          <TabsContent value="portfolio" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  Professional Portfolio
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="years-experience">Years of Experience</Label>
+                  <Input
+                    id="years-experience"
+                    type="number"
+                    placeholder="e.g., 5"
+                    value={techProfile?.yearsExperience || ""}
+                    onChange={(e) => {
+                      // This will be handled by the profile save
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="education">Education & Training</Label>
+                  <Textarea
+                    id="education"
+                    placeholder="List your relevant education, certifications, and training..."
+                    value={techProfile?.education || ""}
+                    onChange={(e) => {
+                      // This will be handled by the profile save
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="resume-url">Resume URL</Label>
+                  <Input
+                    id="resume-url"
+                    placeholder="https://yourwebsite.com/resume.pdf"
+                    value={techProfile?.resumeUrl || ""}
+                    onChange={(e) => {
+                      // This will be handled by the profile save
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="portfolio-url">Portfolio URL</Label>
+                  <Input
+                    id="portfolio-url"
+                    placeholder="https://yourwebsite.com/portfolio"
+                    value={techProfile?.portfolioUrl || ""}
+                    onChange={(e) => {
+                      // This will be handled by the profile save
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
