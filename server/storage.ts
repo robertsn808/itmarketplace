@@ -9,6 +9,9 @@ import {
   tickets,
   ticketMessages,
   techProfiles,
+  techCertifications,
+  techSkills,
+  serviceCompletions,
   type User,
   type UpsertUser,
   type Client,
@@ -29,6 +32,12 @@ import {
   type InsertTicketMessage,
   type TechProfile,
   type InsertTechProfile,
+  type TechCertification,
+  type InsertTechCertification,
+  type TechSkill,
+  type InsertTechSkill,
+  type ServiceCompletion,
+  type InsertServiceCompletion,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
@@ -94,6 +103,30 @@ export interface IStorage {
   // Tech profile operations
   getTechProfile(userId: string): Promise<TechProfile | undefined>;
   upsertTechProfile(profile: InsertTechProfile): Promise<TechProfile>;
+  
+  // Tech certification operations
+  getTechCertifications(techProfileId: number): Promise<TechCertification[]>;
+  createTechCertification(certification: InsertTechCertification): Promise<TechCertification>;
+  updateTechCertification(id: number, certification: Partial<InsertTechCertification>): Promise<TechCertification>;
+  deleteTechCertification(id: number): Promise<void>;
+  
+  // Tech skill operations
+  getTechSkills(techProfileId: number): Promise<TechSkill[]>;
+  createTechSkill(skill: InsertTechSkill): Promise<TechSkill>;
+  updateTechSkill(id: number, skill: Partial<InsertTechSkill>): Promise<TechSkill>;
+  deleteTechSkill(id: number): Promise<void>;
+  
+  // Service completion operations
+  getServiceCompletions(techProfileId: number): Promise<ServiceCompletion[]>;
+  createServiceCompletion(completion: InsertServiceCompletion): Promise<ServiceCompletion>;
+  updateServiceCompletion(id: number, completion: Partial<InsertServiceCompletion>): Promise<ServiceCompletion>;
+  deleteServiceCompletion(id: number): Promise<void>;
+  getTechStats(techProfileId: number): Promise<{
+    totalCompletions: number;
+    totalHours: number;
+    averageRating: number;
+    categories: { category: string; count: number }[];
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {

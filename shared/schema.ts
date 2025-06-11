@@ -154,8 +154,54 @@ export const techProfiles = pgTable("tech_profiles", {
   profileImageUrl: varchar("profile_image_url", { length: 255 }),
   bio: text("bio"),
   hourlyRate: decimal("hourly_rate", { precision: 8, scale: 2 }),
+  yearsExperience: integer("years_experience"),
+  education: text("education"),
+  resumeUrl: varchar("resume_url", { length: 255 }),
+  portfolioUrl: varchar("portfolio_url", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tech Certifications
+export const techCertifications = pgTable("tech_certifications", {
+  id: serial("id").primaryKey(),
+  techProfileId: integer("tech_profile_id").notNull().references(() => techProfiles.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  issuingOrganization: varchar("issuing_organization", { length: 255 }).notNull(),
+  credentialId: varchar("credential_id", { length: 255 }),
+  credentialUrl: varchar("credential_url", { length: 255 }),
+  issueDate: timestamp("issue_date"),
+  expirationDate: timestamp("expiration_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Tech Skills/Badges
+export const techSkills = pgTable("tech_skills", {
+  id: serial("id").primaryKey(),
+  techProfileId: integer("tech_profile_id").notNull().references(() => techProfiles.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  category: varchar("category", { length: 100 }), // hardware, software, networking, security, etc
+  proficiencyLevel: varchar("proficiency_level", { length: 50 }), // beginner, intermediate, advanced, expert
+  verified: boolean("verified").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Service Completion Records
+export const serviceCompletions = pgTable("service_completions", {
+  id: serial("id").primaryKey(),
+  techProfileId: integer("tech_profile_id").notNull().references(() => techProfiles.id),
+  serviceRequestId: integer("service_request_id").references(() => serviceRequests.id),
+  clientId: integer("client_id").references(() => clients.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 100 }), // repair, maintenance, installation, consultation
+  hoursWorked: decimal("hours_worked", { precision: 5, scale: 2 }),
+  clientSatisfactionRating: integer("client_satisfaction_rating"), // 1-5 stars
+  clientTestimonial: text("client_testimonial"),
+  completedAt: timestamp("completed_at").defaultNow(),
+  skillsUsed: text("skills_used").array(), // Array of skills demonstrated
+  challengesSolved: text("challenges_solved"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Zod schemas
@@ -217,6 +263,22 @@ export const insertTechProfileSchema = createInsertSchema(techProfiles).omit({
   updatedAt: true,
 });
 
+export const insertTechCertificationSchema = createInsertSchema(techCertifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertTechSkillSchema = createInsertSchema(techSkills).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertServiceCompletionSchema = createInsertSchema(serviceCompletions).omit({
+  id: true,
+  createdAt: true,
+  completedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -238,3 +300,9 @@ export type TicketMessage = typeof ticketMessages.$inferSelect;
 export type InsertTicketMessage = z.infer<typeof insertTicketMessageSchema>;
 export type TechProfile = typeof techProfiles.$inferSelect;
 export type InsertTechProfile = z.infer<typeof insertTechProfileSchema>;
+export type TechCertification = typeof techCertifications.$inferSelect;
+export type InsertTechCertification = z.infer<typeof insertTechCertificationSchema>;
+export type TechSkill = typeof techSkills.$inferSelect;
+export type InsertTechSkill = z.infer<typeof insertTechSkillSchema>;
+export type ServiceCompletion = typeof serviceCompletions.$inferSelect;
+export type InsertServiceCompletion = z.infer<typeof insertServiceCompletionSchema>;
