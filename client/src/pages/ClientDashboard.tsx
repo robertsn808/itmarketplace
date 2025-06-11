@@ -58,9 +58,8 @@ export default function ClientDashboard() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { ticketId: number; message: string; isFromClient: boolean }) => {
-      return await apiRequest("POST", `/api/tickets/${data.ticketId}/messages`, {
+      return await apiRequest("POST", `/api/client/tickets/${data.ticketId}/messages`, {
         message: data.message,
-        isFromClient: data.isFromClient,
         senderName: client?.name || "Client",
       });
     },

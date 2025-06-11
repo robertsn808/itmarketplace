@@ -490,6 +490,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/client/tickets/:ticketId/messages", async (req, res) => {
+    try {
+      const clientId = req.session.clientId;
+      if (!clientId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const ticketId = parseInt(req.params.ticketId);
+      const messageData = insertTicketMessageSchema.parse({
+        ...req.body,
+        ticketId,
+        senderType: "client"
+      });
+      const message = await storage.createTicketMessage(messageData);
+      res.json(message);
+    } catch (error) {
+      console.error("Create client ticket message error:", error);
+      res.status(500).json({ message: "Failed to create message" });
+    }
+  });
+
   // Tech Certification routes
   app.get("/api/tech-certifications/:techProfileId", isAuthenticated, async (req, res) => {
     try {
