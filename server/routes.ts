@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertWebLeadSchema, insertClientSchema, insertServiceRequestSchema, insertInventorySchema, insertInvoiceSchema } from "@shared/schema";
+import { insertWebLeadSchema, insertClientSchema, insertServiceRequestSchema, insertInventorySchema, insertInvoiceSchema, insertIncidentSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -191,6 +191,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  // Incident routes
+  app.get('/api/incidents', isAuthenticated, async (req, res) => {
+    try {
+      const incidents = await storage.getAllIncidents();
+      res.json(incidents);
+    } catch (error) {
+      console.error("Error fetching incidents:", error);
+      res.status(500).json({ message: "Failed to fetch incidents" });
+    }
+  });
+
+  app.get('/api/incidents/client/:clientId', isAuthenticated, async (req, res) => {
+    try {
+      const clientId = parseInt(req.params.clientId);
+      const incidents = await storage.getIncidentsByClient(clientId);
+      res.json(incidents);
+    } catch (error) {
+      console.error("Error fetching client incidents:", error);
+      res.status(500).json({ message: "Failed to fetch client incidents" });
+    }
+  });
+
+  app.post('/api/incidents', isAuthenticated, async (req, res) => {
+    try {
+      const incidentData = insertIncidentSchema.parse(req.body);
+      const incident = await storage.createIncident(incidentData);
+      res.json(incident);
+    } catch (error) {
+      console.error("Error creating incident:", error);
+      res.status(500).json({ message: "Failed to create incident" });
+    }
+  });
+
+  app.patch('/api/incidents/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const incident = await storage.updateIncident(id, updates);
+      res.json(incident);
+    } catch (error) {
+      console.error("Error updating incident:", error);
+      res.status(500).json({ message: "Failed to update incident" });
     }
   });
 

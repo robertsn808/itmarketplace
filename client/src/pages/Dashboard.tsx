@@ -19,7 +19,11 @@ import {
   LogOut,
   Plus,
   Boxes,
-  UserCheck
+  UserCheck,
+  Phone,
+  Package,
+  Wrench,
+  CheckCircle
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -78,6 +82,12 @@ export default function Dashboard() {
     retry: false,
   });
 
+  // Incidents query
+  const { data: incidents } = useQuery({
+    queryKey: ["/api/incidents"],
+    retry: false,
+  });
+
   const handleLogout = () => {
     window.location.href = "/api/logout";
   };
@@ -109,6 +119,50 @@ export default function Dashboard() {
     },
   });
 
+  // Create incident mutation
+  const createIncidentMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("POST", "/api/incidents", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Incident created successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/incidents"] });
+    },
+    onError: (error) => {
+      console.error("Create incident error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create incident",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update incident stage mutation
+  const updateIncidentMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: number; updates: any }) => {
+      return await apiRequest("PATCH", `/api/incidents/${id}`, updates);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Stage updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/incidents"] });
+    },
+    onError: (error) => {
+      console.error("Update incident error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update stage",
+        variant: "destructive",
+      });
+    },
+  });
+
   if (!isAuthenticated || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -133,6 +187,56 @@ export default function Dashboard() {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  // Get client's latest incident
+  const getClientIncident = (clientId: number) => {
+    if (!incidents || !Array.isArray(incidents)) return null;
+    return incidents.find((incident: any) => incident.clientId === clientId);
+  };
+
+  // Create incident for existing client
+  const handleCreateIncident = (client: any) => {
+    createIncidentMutation.mutate({
+      clientId: client.id,
+      title: `IT Support for ${client.name}`,
+      description: "New incident created for existing client",
+      callStage: true,
+      receiveStage: false,
+      repairStage: false,
+      pickupStage: false,
+    });
+  };
+
+  // Toggle incident stage
+  const handleToggleStage = (incident: any, stage: string) => {
+    const updates: any = {};
+    updates[stage] = !incident[stage];
+    updateIncidentMutation.mutate({ id: incident.id, updates });
+  };
+
+  // Render stage indicator
+  const renderStageIndicator = (
+    icon: React.ReactNode,
+    isActive: boolean,
+    isClickable: boolean,
+    label: string,
+    onClick?: () => void
+  ) => (
+    <div 
+      className={`flex flex-col items-center p-2 rounded cursor-pointer transition-colors ${
+        isActive 
+          ? "bg-green-100 text-green-700" 
+          : isClickable 
+            ? "bg-gray-100 text-gray-400 hover:bg-gray-200" 
+            : "bg-gray-50 text-gray-300"
+      }`}
+      onClick={isClickable ? onClick : undefined}
+      title={label}
+    >
+      {icon}
+      <span className="text-xs mt-1">{label}</span>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -287,6 +391,8 @@ export default function Dashboard() {
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Phone</TableHead>
+                      <TableHead>Repair Progress</TableHead>
+                      <TableHead>Actions</TableHead>
                       <TableHead>Created</TableHead>
                     </TableRow>
                   </TableHeader>
