@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,8 @@ import {
   UserPlus, 
   LogOut,
   Plus,
-  Boxes
+  Boxes,
+  UserCheck
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -79,6 +81,33 @@ export default function Dashboard() {
   const handleLogout = () => {
     window.location.href = "/api/logout";
   };
+
+  // Convert lead to client mutation
+  const convertLeadMutation = useMutation({
+    mutationFn: async (lead: any) => {
+      return await apiRequest("POST", "/api/clients", {
+        name: lead.name,
+        email: lead.email,
+        notes: `Converted from lead. Original message: ${lead.message}`
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Lead converted to client successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+    },
+    onError: (error) => {
+      console.error("Convert lead error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to convert lead to client",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (!isAuthenticated || isLoading) {
     return (
@@ -300,12 +329,13 @@ export default function Dashboard() {
                       <TableHead>Message</TableHead>
                       <TableHead>Source</TableHead>
                       <TableHead>Created</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {leads?.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                           No leads found
                         </TableCell>
                       </TableRow>
@@ -318,6 +348,17 @@ export default function Dashboard() {
                           <TableCell>{lead.source || "N/A"}</TableCell>
                           <TableCell>
                             {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : "N/A"}
+                          </TableCell>
+                          <TableCell>
+                            <Button 
+                              size="sm" 
+                              onClick={() => convertLeadMutation.mutate(lead)}
+                              disabled={convertLeadMutation.isPending}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <UserCheck className="h-4 w-4 mr-1" />
+                              Add as Client
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))
