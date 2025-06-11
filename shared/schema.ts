@@ -40,10 +40,12 @@ export const users = pgTable("users", {
 export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 100 }),
-  email: varchar("email", { length: 100 }),
+  email: varchar("email", { length: 100 }).unique(),
   phone: varchar("phone", { length: 20 }),
   address: text("address"),
   notes: text("notes"),
+  password: varchar("password", { length: 255 }), // For client authentication
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -148,6 +150,18 @@ export const techProfiles = pgTable("tech_profiles", {
 export const insertClientSchema = createInsertSchema(clients).omit({
   id: true,
   createdAt: true,
+});
+
+export const clientLoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+export const clientSignupSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().optional(),
+  password: z.string().min(6),
 });
 
 export const insertServiceRequestSchema = createInsertSchema(serviceRequests).omit({

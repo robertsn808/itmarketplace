@@ -7,6 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import NotFound from "@/pages/not-found";
+import ClientLogin from "@/pages/ClientLogin";
+import ClientSignup from "@/pages/ClientSignup";
+import ClientDashboard from "@/pages/ClientDashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -17,6 +20,9 @@ function Router() {
       <Route path="/dashboard">
         {isAuthenticated ? <Dashboard /> : <Landing />}
       </Route>
+      <Route path="/client/login" component={ClientLogin} />
+      <Route path="/client/signup" component={ClientSignup} />
+      <Route path="/client/dashboard" component={ClientDashboard} />
       <Route component={NotFound} />
     </Switch>
   );
