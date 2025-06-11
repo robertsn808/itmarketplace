@@ -295,9 +295,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Ticket message routes
-  app.get('/api/tickets/:id/messages', isAuthenticated, async (req, res) => {
+  // Ticket message routes - unified for both tech and client access
+  app.get('/api/tickets/:id/messages', async (req, res) => {
     try {
+      // Accept both client and tech authentication
+      const isClientAuth = req.session.clientId;
+      const isTechAuth = req.user?.claims?.sub;
+      
+      if (!isClientAuth && !isTechAuth) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const ticketId = parseInt(req.params.id);
       const messages = await storage.getTicketMessages(ticketId);
       res.json(messages);
@@ -307,12 +315,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/tickets/:id/messages', isAuthenticated, async (req, res) => {
+  app.post('/api/tickets/:id/messages', async (req, res) => {
     try {
+      // Accept both client and tech authentication
+      const isClientAuth = req.session.clientId;
+      const isTechAuth = req.user?.claims?.sub;
+      
+      if (!isClientAuth && !isTechAuth) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const ticketId = parseInt(req.params.id);
+      
+      // Determine sender type based on authentication
+      const senderType = isClientAuth ? "client" : "tech";
+      
       const messageData = insertTicketMessageSchema.parse({
         ...req.body,
-        ticketId
+        ticketId,
+        senderType
       });
       const message = await storage.createTicketMessage(messageData);
       res.json(message);

@@ -50,7 +50,7 @@ export default function ClientDashboard() {
 
   // Fetch ticket messages for selected ticket
   const { data: ticketMessages } = useQuery({
-    queryKey: ["/api/client/tickets", selectedTicket?.id, "messages"],
+    queryKey: [`/api/tickets/${selectedTicket?.id}/messages`],
     enabled: !!selectedTicket?.id,
     refetchInterval: 3000, // Refresh every 3 seconds for live chat
   });
@@ -58,14 +58,14 @@ export default function ClientDashboard() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { ticketId: number; message: string; isFromClient: boolean }) => {
-      return await apiRequest("POST", `/api/client/tickets/${data.ticketId}/messages`, {
+      return await apiRequest("POST", `/api/tickets/${data.ticketId}/messages`, {
         message: data.message,
         senderName: client?.name || "Client",
       });
     },
     onSuccess: () => {
       setNewMessage("");
-      queryClient.invalidateQueries({ queryKey: ["/api/client/tickets", selectedTicket?.id, "messages"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/tickets/${selectedTicket?.id}/messages`] });
     },
   });
 
@@ -358,11 +358,11 @@ export default function ClientDashboard() {
               ticketMessages?.map((message: any) => (
                 <div
                   key={message.id}
-                  className={`flex ${message.isFromClient ? "justify-end" : "justify-start"}`}
+                  className={`flex ${message.senderType === "client" ? "justify-end" : "justify-start"}`}
                 >
                   <div
                     className={`max-w-[70%] rounded-lg p-3 ${
-                      message.isFromClient
+                      message.senderType === "client"
                         ? "bg-primary text-primary-foreground"
                         : "bg-background border"
                     }`}
