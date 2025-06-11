@@ -22,7 +22,9 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  Loader2
+  Loader2,
+  DollarSign,
+  Calculator
 } from "lucide-react";
 
 interface TicketDialogProps {
@@ -36,6 +38,10 @@ export function TicketDialog({ serviceRequest, open, onOpenChange }: TicketDialo
   const [messageType, setMessageType] = useState<"chat" | "email">("chat");
   const [isInternal, setIsInternal] = useState(false);
   const [ticket, setTicket] = useState<any>(null);
+  const [estimatedHours, setEstimatedHours] = useState("");
+  const [hourlyRate, setHourlyRate] = useState("");
+  const [totalEstimate, setTotalEstimate] = useState("");
+  const [priceNotes, setPriceNotes] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -461,6 +467,98 @@ export function TicketDialog({ serviceRequest, open, onOpenChange }: TicketDialo
                       }
                     />
                     <Label className="text-sm">Client notifications</Label>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Price Negotiation */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Price Negotiation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Estimated Hours</Label>
+                      <Input
+                        type="number"
+                        step="0.5"
+                        placeholder="0.0"
+                        value={estimatedHours}
+                        onChange={(e) => {
+                          setEstimatedHours(e.target.value);
+                          if (e.target.value && hourlyRate) {
+                            setTotalEstimate((parseFloat(e.target.value) * parseFloat(hourlyRate)).toFixed(2));
+                          }
+                        }}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Hourly Rate ($)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={hourlyRate}
+                        onChange={(e) => {
+                          setHourlyRate(e.target.value);
+                          if (e.target.value && estimatedHours) {
+                            setTotalEstimate((parseFloat(estimatedHours) * parseFloat(e.target.value)).toFixed(2));
+                          }
+                        }}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Total Estimate</Label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-mono">$</span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={totalEstimate}
+                        onChange={(e) => setTotalEstimate(e.target.value)}
+                        className="h-8 text-sm"
+                      />
+                      <Button size="sm" variant="outline" className="h-8 px-2">
+                        <Calculator className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Pricing Notes</Label>
+                    <Textarea
+                      placeholder="Add notes about pricing, parts, travel time, etc..."
+                      value={priceNotes}
+                      onChange={(e) => setPriceNotes(e.target.value)}
+                      className="min-h-[60px] text-sm resize-none"
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="flex-1">
+                      Send Quote
+                    </Button>
+                    <Button size="sm" className="flex-1">
+                      Accept Quote
+                    </Button>
+                  </div>
+
+                  <div className="pt-2 border-t">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Quote Status:</span>
+                      <Badge variant="outline" className="text-xs">
+                        Draft
+                      </Badge>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
